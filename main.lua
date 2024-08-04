@@ -2,10 +2,10 @@ local notification = {}
 
 local tween = game:GetService("TweenService")
 
--- check if the notification gui already exists
+-- Check if the Notification GUI already exists
 local exists = game.Players.LocalPlayer.PlayerGui:FindFirstChild("Notification")
 if exists then
-	return notification  -- if it exists, return the notification table and skip the rest of the script
+    return notification  -- If it exists, return the notification table and skip the rest of the script
 end
 
 local warnicon = "rbxassetid://7249251729"
@@ -13,17 +13,17 @@ local errorsign = "rbxassetid://187736963"
 local notifysign = "rbxassetid://11707615313"
 
 local Instances = {
-	Notification = Instance.new("ScreenGui"),
-	Main_Holder = Instance.new("Frame"),
-	UICorner = Instance.new("UICorner"),
-	notification_text = Instance.new("TextLabel"),
-	UIPadding = Instance.new("UIPadding"),
-	icon = Instance.new("ImageLabel"),
-	UICorner_2 = Instance.new("UICorner"),
+    Notification = Instance.new("ScreenGui"),
+    Main_Holder = Instance.new("Frame"),
+    UICorner = Instance.new("UICorner"),
+    notification_text = Instance.new("TextLabel"),
+    UIPadding = Instance.new("UIPadding"),
+    icon = Instance.new("ImageLabel"),
+    UICorner_2 = Instance.new("UICorner"),
 }
 
 Instances.Notification.Name = "Notification"
-Instances.Notification.Parent = game.StarterGui
+Instances.Notification.Parent = game.Players.LocalPlayer.PlayerGui  -- Attach to PlayerGui
 
 Instances.Main_Holder.Name = "Main_Holder"
 Instances.Main_Holder.Size = UDim2.new(0, 311, 0, 40)
@@ -45,7 +45,7 @@ Instances.notification_text.BorderSizePixel = 0
 Instances.notification_text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 Instances.notification_text.TextDirection = Enum.TextDirection.LeftToRight
 Instances.notification_text.TextColor3 = Color3.fromRGB(209, 134, 91)
-Instances.notification_text.Text = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+Instances.notification_text.Text = "Placeholder"
 Instances.notification_text.TextXAlignment = Enum.TextXAlignment.Left
 Instances.notification_text.TextWrapped = true
 Instances.notification_text.TextSize = 18
@@ -74,63 +74,72 @@ Instances.UICorner_2.Parent = Instances.icon
 
 local playing = false
 
+local function tweenComplete(tween, duration, completeCallback)
+    tween.Completed:Connect(function()
+        wait(duration)
+        completeCallback()
+    end)
+end
+
 function notification.notify(text, duration)
-	if text and duration and not playing then
-		local tweening = tween:Create(Instances.Main_Holder, TweenInfo.new(1), { Position = UDim2.new(0.745, 0, 0.89, 0) })
-		local tweenoff = tween:Create(Instances.Main_Holder, TweenInfo.new(1), { Position = UDim2.new(1.01, 0, 0.89, 0) })
-		Instances.notification_text.Text = text
-		Instances.icon.Image = notifysign
-		tweening:Play()
-		tweening.Completed:Connect(function()
-			wait(duration)
-			tweenoff:Play()
-		end)
-		playing = false
-	else
-		warn("Text or duration not provided, or in cooldown.")
-	end
+    if text and duration and not playing then
+        playing = true
+        local tweening = tween:Create(Instances.Main_Holder, TweenInfo.new(1), { Position = UDim2.new(0.745, 0, 0.89, 0) })
+        local tweenoff = tween:Create(Instances.Main_Holder, TweenInfo.new(1), { Position = UDim2.new(1.01, 0, 0.89, 0) })
+        Instances.notification_text.Text = text
+        Instances.icon.Image = notifysign
+        tweening:Play()
+        tweenComplete(tweening, duration, function()
+            tweenoff:Play()
+            tweenComplete(tweenoff, 0, function()
+                playing = false
+            end)
+        end)
+    else
+        warn("Text or duration not provided, or in cooldown.")
+    end
 end
 
 function notification.error(text, duration)
-	if text and duration and not playing then
-		local tweening = tween:Create(Instances.Main_Holder, TweenInfo.new(1), { Position = UDim2.new(0.745, 0, 0.89, 0) })
-		local tweenoff = tween:Create(Instances.Main_Holder, TweenInfo.new(1), { Position = UDim2.new(1.01, 0, 0.89, 0) })
-		Instances.notification_text.TextColor3 = Color3.fromRGB(160, 25, 75)
-		Instances.notification_text.Text = text
-		Instances.icon.Image = errorsign
-		tweening:Play()
-		tweening.Completed:Connect(function()
-			wait(duration)
-			tweenoff:Play()
-		end)
-		tweenoff.Completed:Connect(function()
-			Instances.notification_text.TextColor3 = Color3.fromRGB(205, 135, 90)
-		end)
-		playing = false
-	else
-		warn("Text or duration not provided, or in cooldown.")
-	end
+    if text and duration and not playing then
+        playing = true
+        local tweening = tween:Create(Instances.Main_Holder, TweenInfo.new(1), { Position = UDim2.new(0.745, 0, 0.89, 0) })
+        local tweenoff = tween:Create(Instances.Main_Holder, TweenInfo.new(1), { Position = UDim2.new(1.01, 0, 0.89, 0) })
+        Instances.notification_text.TextColor3 = Color3.fromRGB(160, 25, 75)
+        Instances.notification_text.Text = text
+        Instances.icon.Image = errorsign
+        tweening:Play()
+        tweenComplete(tweening, duration, function()
+            tweenoff:Play()
+            tweenComplete(tweenoff, 0, function()
+                Instances.notification_text.TextColor3 = Color3.fromRGB(205, 135, 90)
+                playing = false
+            end)
+        end)
+    else
+        warn("Text or duration not provided, or in cooldown.")
+    end
 end
 
 function notification.warn(text, duration)
-	if text and duration and not playing then
-		local tweening = tween:Create(Instances.Main_Holder, TweenInfo.new(1), { Position = UDim2.new(0.745, 0, 0.89, 0) })
-		local tweenoff = tween:Create(Instances.Main_Holder, TweenInfo.new(1), { Position = UDim2.new(1.01, 0, 0.89, 0) })
-		Instances.notification_text.TextColor3 = Color3.fromRGB(190, 160, 90)
-		Instances.notification_text.Text = text
-		Instances.icon.Image = warnicon
-		tweening:Play()
-		tweening.Completed:Connect(function()
-			wait(duration)
-			tweenoff:Play()
-		end)
-		tweenoff.Completed:Connect(function()
-			Instances.notification_text.TextColor3 = Color3.fromRGB(205, 135, 90)
-		end)
-		playing = false
-	else
-		warn("Text or duration not provided, or in cooldown.")
-	end
+    if text and duration and not playing then
+        playing = true
+        local tweening = tween:Create(Instances.Main_Holder, TweenInfo.new(1), { Position = UDim2.new(0.745, 0, 0.89, 0) })
+        local tweenoff = tween:Create(Instances.Main_Holder, TweenInfo.new(1), { Position = UDim2.new(1.01, 0, 0.89, 0) })
+        Instances.notification_text.TextColor3 = Color3.fromRGB(190, 160, 90)
+        Instances.notification_text.Text = text
+        Instances.icon.Image = warnicon
+        tweening:Play()
+        tweenComplete(tweening, duration, function()
+            tweenoff:Play()
+            tweenComplete(tweenoff, 0, function()
+                Instances.notification_text.TextColor3 = Color3.fromRGB(205, 135, 90)
+                playing = false
+            end)
+        end)
+    else
+        warn("Text or duration not provided, or in cooldown.")
+    end
 end
 
 return notification
