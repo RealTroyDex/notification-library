@@ -5,7 +5,7 @@ local tween = game:GetService("TweenService")
 -- Check if the Notification GUI already exists
 local exists = game.Players.LocalPlayer.PlayerGui:FindFirstChild("Notification")
 if exists then
-    return  -- If it exists, return the notification table and skip the rest of the script
+    return  -- If it exists, returns
 end
 
 local warnicon = "rbxassetid://7249251729"
